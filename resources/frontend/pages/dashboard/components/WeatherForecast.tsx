@@ -1,6 +1,6 @@
+import { useNavigate } from 'react-router-dom';
 import { Forecast } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { NavLink } from 'react-router-dom';
 
 interface GroupedWeatherData {
 	[date: string]: Forecast[];
@@ -11,6 +11,7 @@ interface WeatherForecastCardProps {
 }
 
 export function WeatherForecastCard({ data }: WeatherForecastCardProps) {
+	const navigate = useNavigate();
 	const groupedData = groupByDate(data);
 	const filteredGroupedData = filterGroupedData(groupedData);
 	const extremes = findExtremes(groupedData);
@@ -88,12 +89,16 @@ export function WeatherForecastCard({ data }: WeatherForecastCardProps) {
 		return extremes;
 	}
 
+	function handleForecastClick(forecast: Forecast) {
+		navigate(`/weather/${forecast.dt}`, { state: { forecast } });
+	}
+
 	function renderForecastForDate(forecasts: Forecast[]) {
 		return forecasts.map((forecast) => (
-			<NavLink
+			<div
 				key={forecast.dt}
-				className=" flex flex-row justify-between items-center flex-grow hover:-translate-y-1 hover:scale-110 duration-300"
-				to={`/weather/${forecast.dt}`}
+				className="flex flex-row justify-between items-center flex-grow hover:-translate-y-1 hover:scale-110 duration-300 cursor-pointer"
+				onClick={() => handleForecastClick(forecast)}
 			>
 				<div className="w-20 text-3xl">
 					{new Date(forecast.dt_txt).toLocaleDateString('en-US', { weekday: 'long' })}
@@ -119,13 +124,13 @@ export function WeatherForecastCard({ data }: WeatherForecastCardProps) {
 							),
 					)}
 				</div>
-			</NavLink>
+			</div>
 		));
 	}
 
-	console.log(filteredGroupedData)
+	console.log(filteredGroupedData);
 	return (
-		<Card className="md:w-3/5 sm:w-full h-lvh animate-fade-left">
+		<Card className=" w-full h-lvh animate-fade-left">
 			<CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
 				<CardTitle className="text-2xl text-muted-foreground font-medium">5-DAY FORECAST</CardTitle>
 			</CardHeader>

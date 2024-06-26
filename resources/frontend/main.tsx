@@ -11,6 +11,7 @@ import { toast } from '@/hooks/toast.hook.ts';
 import '@/styles/globals.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { MapProvider } from 'react-map-gl';
+import { MetricProvider } from './metric.jsx';
 
 // Create query client
 const queryClient = new QueryClient({
@@ -23,7 +24,6 @@ const queryClient = new QueryClient({
 	},
 	queryCache: new QueryCache({
 		onError: (error, query) => {
-
 			// Show error only if given by query
 			if (query.meta?.errorMessage) {
 				toast({
@@ -42,9 +42,11 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 		<MapProvider>
 			<TooltipProvider delayDuration={100} skipDelayDuration={500}>
 				<QueryClientProvider client={queryClient}>
-					<Router>
-						<App />
-					</Router>
+					<MetricProvider>
+						<Router>
+							<App />
+						</Router>
+					</MetricProvider>
 				</QueryClientProvider>
 			</TooltipProvider>
 			<Toaster />

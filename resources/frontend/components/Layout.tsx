@@ -1,26 +1,9 @@
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { AppHeader } from './AppHeader';
-import { useAuth } from '@/hooks/auth.hook';
-import { useEffect } from 'react';
-import { AppFooter } from '@/pages/landing/components/AppFooter';
 
-export function Layout({ variant }: { variant: 'auth' | 'guest' }) {
-	const navigate = useNavigate();
-	const { user, token } = useAuth();
-
-	useEffect(() => {
-		// Redirect to login page if user is not authenticated
-		if ((!user || !token) && variant === 'auth') navigate('', { replace: true });
-
-		// Redirect to dashboard if user is authenticated
-		if (user && token && variant === 'guest') navigate('/dashboard', { replace: true });
-	}, [user]);
-
+export function Layout() {
 	// Guest Layout
-	return variant === 'guest' ? (
-		<Outlet />
-	) : (
-		// Authenticated Layout
+	return (
 		<div className="flex flex-col min-h-screen">
 			{/* Background pattern */}
 			<div className="pattern"></div>

@@ -1,48 +1,51 @@
-import { QUERY_KEY } from '@/data/constants';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { WeatherData } from '@/types';
 import { fetchWeatherData } from '@/data';
 import { WeatherForecastCard } from './components/WeatherForecast';
 import { TodaysForecastCard } from './components/TodaysForcast';
 import { AirConditionCard } from './components/AirCondition';
 import { useQuery } from '@tanstack/react-query';
+import { useMetric } from '@/metric';
 
-const lang = 'bg'; // Bulgarian language
+const useWeatherData = (selectedMetric:any) => {
+  const [location, setLocation] = useState(null);
+  const [error, setError] = useState('');
 
-const useWeatherData = () => {
-    const [location, setLocation] = useState(null);
-    const [error, setError] = useState('');
-
-    useEffect(() => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const { latitude, longitude } = position.coords;
-                    setLocation({ latitude, longitude });
-                },
-                (error) => {
-                    setError(error.message);
-                }
-            );
-        } else {
-            setError('Geolocation is not supported by this browser.');
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setLocation({ latitude, longitude });
+        },
+        (error) => {
+          setError(error.message);
         }
-    }, []);
+      );
+    } else {
+      setError('Geolocation is not supported by this browser.');
+    }
+  }, []);
 
-    const { isLoading, data, isError, error: queryError } = useQuery(
-        ['weatherData', location],
-        () => fetchWeatherData(location.latitude, location.longitude),
-        {
-            enabled: !!location,
-        }
-    );
+  const { isLoading, data, isError, error: queryError, refetch } = useQuery(
+    ['weatherData', location, selectedMetric],
+    () => fetchWeatherData(location.latitude, location.longitude, selectedMetric),
+    {
+      enabled: !!location,
+    }
+  );
 
-    return { isLoading, data, isError, error: isError ? queryError.message : error };
+  useEffect(() => {
+    refetch(); // Refetch data whenever selectedMetric changes
+  }, [selectedMetric, refetch]);
+
+  return { isLoading, data, isError, error: isError ? queryError.message : error, refetch };
 };
 
+export default useWeatherData;
+
 export function DashboardLayout() {
-    const { isLoading, data: forecastData, isError, error } = useWeatherData();
+    const { selectedMetric } = useMetric(); // Assuming useMetric provides selectedMetric
+  const { isLoading, data: forecastData, isError, error } = useWeatherData(selectedMetric);
     const [weatherIconUrl, setWeatherIconUrl] = useState<string>('');
 
     useEffect(() => {
@@ -69,7 +72,7 @@ export function DashboardLayout() {
 
     return (
         <>
-            <div className="flex md:flex-row flex-col ">
+            <div className="flex lg:flex-row flex-col ">
                 {/* Current Weather */}
                 <div className="w-full mr-9 animate-fade-right">
                     <section className="flex justify-between">
